@@ -32,3 +32,10 @@ button:hover{
 #carCanvas{
     background:#2a5;
 }
+.miniMap{
+    position: absolute;
+    right: 20px;
+    bottom: 20px;
+    border-radius: 50%;
+    opacity: 50%;
+}
