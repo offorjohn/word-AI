@@ -1,21 +1,27 @@
+const rightPanelWidth = 300;
 const carCanvas = document.getElementById("carCanvas");
 carCanvas.width = window.innerWidth;
 carCanvas.height = window.innerHeight;
 
 const miniMapCanvas = document.getElementById("miniMapCanvas");
-miniMapCanvas.width = 300;
-miniMapCanvas.height = 300;
+miniMapCanvas.width = rightPanelWidth;
+miniMapCanvas.height = rightPanelWidth;
+
+
+statistics.style.width = rightPanelWidth + "px";
+statistics.style.height = window.innerHeight - rightPanelWidth - 60 + "px";
+
 
 const carCtx = carCanvas.getContext("2d");
 
 
 
 const viewport = new Viewport(carCanvas, world.zoom, world.offset);
-const miniMap = new MiniMap(miniMapCanvas, world.graph, 300);
+const miniMap = new MiniMap(miniMapCanvas, world.graph, rightPanelWidth);
 
 const N = 100;
 const cars = generateCars(1, "KEYS").concat(generateCars(N, "AI"));
-const  myCar = cars[0];
+const myCar = cars[0];
 if (localStorage.getItem("bestBrain")) {
     for (let i = 0; i < cars.length; i++) {
         cars[i].brain = JSON.parse(
@@ -26,17 +32,28 @@ if (localStorage.getItem("bestBrain")) {
     }
 }
 
+for (let i = 0; i < cars.length; i++) {
+    const div = document.createElement("div");
+    div.id = "stat_" + i;
+    div.innerText = i;
+    div.style.color = cars[i].color;
+    div.classList.add("stat");
+    statistics.appendChild(div);
+}
+
 
 let roadBorders = [];
 
 const target = world.markings.find((m) => m instanceof Target);
 if (target) {
     world.generateCorridor(myCar, target.center);
-    roadBorders = world.corridor.map((s) => [s.p1, s.p2]);
+    roadBorders = world.corridor.borders.map((s) => [s.p1, s.p2]);
 } else {
     roadBorders = world.roadBorders.map((s) => [s.p1, s.p2]);
 
 }
+
+let frameCount = 0;
 animate();
 
 function save() {
@@ -60,19 +77,63 @@ function generateCars(N, type) {
 
     const cars = [];
     for (let i = 1; i <= N; i++) {
-        const car = new Car(startPoint.x, startPoint.y, 30, 50, type, startAngle)
+        const color = type == "AI" ? getRandomColor() : "blue";
+        const car = new Car(
+
+            startPoint.x,
+            startPoint.y,
+            30,
+            50,
+            type,
+            startAngle,
+            3,
+            color
+        );
         car.load(carInfo);
         cars.push(car);
     }
     return cars;
 }
 
+function updateCarProgress(car) {
+    if (!car.finishTime) {
+        car.progress = 0;
+        const carSeg = getNearestSegment(car, world.corridor.skeleton);
+        for (let i = 0; i < world.corridor.skeleton.length; i++) {
+            const s = world.corridor.skeleton[i];
+
+            if (s.equals(carSeg)) {
+                const proj = s.projectPoint(car);
+                proj.point.draw(carCtx)
+                const firstPartOfSegment = new Segment(s.p1, proj.point);
+                firstPartOfSegment.draw(carCtx, { color: "red", width: 5 });
+                car.progress += firstPartOfSegment.length();
+                break;
+            } else {
+                s.draw(carCtx, { color: "red", width: 5 });
+                car.progress += s.length();
+            }
+        }
+        const totalDistance = world.corridor.skeleton.reduce(
+            (acc, s) => acc + s.length(), 0
+        );
+        car.progress /= totalDistance;
+        if (car.progress >= 1) {
+            car.progress = 1;
+            car.finishTime = frameCount;
+        }
+
+        console.log(car.progress);
+    }
+
+}
+
 function animate() {
-   
+
     for (let i = 0; i < cars.length; i++) {
         cars[i].update(roadBorders, []);
     }
-    
+
     world.cars = cars;
     world.bestCar = myCar;
 
@@ -84,6 +145,22 @@ function animate() {
     world.draw(carCtx, viewPoint, false);
     miniMap.update(viewPoint);
 
+    for (let i = 0; i < cars.length; i++) {
+        updateCarProgress(cars[i]);
+    }
+    cars.sort((a, b) => b.progress - a.progress);
+
+    for (let i = 0; i < cars.length; i++) {
+        const stat = document.getElementById("stat_" + i);
+        stat.style.color = cars[i].color;
+        stat.innerText = (i + 1) + ": " + (cars[i].progress * 100).toFixed(1) + "%";
+
+    }
+
+
+
+
+    frameCount++;
 
 
     requestAnimationFrame(animate);

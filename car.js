@@ -4,11 +4,13 @@ class Car{
         this.y=y;
         this.width=width;
         this.height=height;
+        this.color = color;
+        this.type = controlType;
 
-        this.speed=100;
-        this.acceleration=500;
+        this.speed=20;
+        this.acceleration=20;
         this.maxSpeed=maxSpeed;
-        this.friction=0;
+        this.friction=0.05;
         this.angle=angle;
         this.damaged=false;
 
@@ -156,7 +158,7 @@ class Car{
 
     draw(ctx,drawSensor=false){
         if(this.sensor && drawSensor){
-            this.sensor.draw(ctx);
+            //this.sensor.draw(ctx);
         }
 
         ctx.save();
