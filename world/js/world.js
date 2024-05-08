@@ -112,7 +112,7 @@ class World {
          segs.push(
             new Segment(
                lastSeg.p2,
-               add(lastSeg.p2, scale(lastSegDir, this.roadWidth))
+               add(lastSeg.p2, scale(lastSegDir, this.roadWidth * 1))
 
 
             )
