@@ -68,14 +68,14 @@ class World {
       this.laneGuides.push(...this.#generateLaneGuides());
    }
 
-   generateCorridor(start, end) {
+   generateCorridor(start, end, extendEnd = false) {
 
       const startSeg = getNearestSegment(start, this.graph.segments);
       const endSeg = getNearestSegment(end, this.graph.segments);
 
 
-      const { point: projStart} = startSeg.projectPoint(start);
-      const { point: projEnd} = endSeg.projectPoint(end);
+      const { point: projStart } = startSeg.projectPoint(start);
+      const { point: projEnd } = endSeg.projectPoint(end);
 
       this.graph.points.push(projStart);
       this.graph.points.push(projEnd);
@@ -105,11 +105,29 @@ class World {
       for (let i = 1; i < path.length; i++) {
          segs.push(new Segment(path[i - 1], path[i]));
       }
+
+      if (extendEnd) {
+         const lastSeg = segs[segs.length - 1];
+         const lastSegDir = lastSeg.directionVector();
+         segs.push(
+            new Segment(
+               lastSeg.p2,
+               add(lastSeg.p2, scale(lastSegDir, this.roadWidth))
+
+
+            )
+         );
+      }
       const tmpEnvelopes = segs.map(
          (s) => new Envelope(s, this.roadWidth, this.roadRoundness)
       );
+      if (extendEnd) {
 
-      const segments  = Polygon.union(tmpEnvelopes.map((e) => e.poly));
+
+         segs.pop();
+      }
+
+      const segments = Polygon.union(tmpEnvelopes.map((e) => e.poly));
 
       this.corridor = { borders: segments, skeleton: segs };
 
@@ -335,7 +353,7 @@ class World {
       }
 
 
-      if(this.corridor){
+      if (this.corridor) {
          for (const seg of this.corridor.borders) {
             seg.draw(ctx, { color: "red", width: 4 });
          }

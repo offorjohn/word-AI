@@ -46,7 +46,7 @@ let roadBorders = [];
 
 const target = world.markings.find((m) => m instanceof Target);
 if (target) {
-    world.generateCorridor(myCar, target.center);
+    world.generateCorridor(myCar, target.center, true);
     roadBorders = world.corridor.borders.map((s) => [s.p1, s.p2]);
 } else {
     roadBorders = world.roadBorders.map((s) => [s.p1, s.p2]);
@@ -54,6 +54,11 @@ if (target) {
 }
 
 let frameCount = 0;
+
+let started = false;
+
+
+startCounter();
 animate();
 
 function save() {
@@ -89,7 +94,7 @@ function generateCars(N, type) {
             3,
             color
         );
-        car.name = type == "AI"  ? "AI"+ 1 : "Me"
+        car.name = type == "AI" ? "AI" + 1 : "Me"
         car.load(carInfo);
         cars.push(car);
     }
@@ -105,13 +110,13 @@ function updateCarProgress(car) {
 
             if (s.equals(carSeg)) {
                 const proj = s.projectPoint(car);
-               
+
                 const firstPartOfSegment = new Segment(s.p1, proj.point);
-               
+
                 car.progress += firstPartOfSegment.length();
                 break;
             } else {
-               
+
                 car.progress += s.length();
             }
         }
@@ -127,10 +132,30 @@ function updateCarProgress(car) {
 
 }
 
-function animate() {
+function startCounter() {
+    counter.innerText = "3";
+    setTimeout(() => {
+        counter.innerText = "2";
+        setTimeout(() => {
+            counter.innerText = "1";
+            setTimeout(() => {
+                counter.innerText = "GO!";
+                setTimeout(() => {
+                    counter.innerText = "";
+                    started = true;
+                    frameCount = 0;
+                }, 1000);
+            }, 1000);
+        }, 1000);
+    }, 1000);
+}
 
-    for (let i = 0; i < cars.length; i++) {
-        cars[i].update(roadBorders, []);
+function animate() {
+    if (started) {
+
+        for (let i = 0; i < cars.length; i++) {
+            cars[i].update(roadBorders, []);
+        }
     }
 
     world.cars = cars;
@@ -153,17 +178,14 @@ function animate() {
         const stat = document.getElementById("stat_" + i);
         stat.style.color = cars[i].color;
         stat.innerText = (i + 1) + ": " + cars[i].name + (cars[i].damaged ? " 💥" : "");
-        stat.style.backgroundColor = cars[i].type == "AI" ? "black" : "white"; 
+        stat.style.backgroundColor = cars[i].type == "AI" ? "black" : "white";
         if (cars[i].finishTime) {
             stat.innerHTML += "<span style='float:right;'>" +
 
-            (cars[i].finishTime / 60).toFixed(1) + "s </span>"
+                (cars[i].finishTime / 60).toFixed(1) + "s </span>"
         }
 
     }
-
-
-
 
     frameCount++;
 
