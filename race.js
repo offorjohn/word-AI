@@ -26,7 +26,7 @@ if (localStorage.getItem("bestBrain")) {
     for (let i = 0; i < cars.length; i++) {
         cars[i].brain = JSON.parse(
             localStorage.getItem("bestBrain"));
-        if (i != 0) {
+        if (i != 1) {
             NeuralNetwork.mutate(cars[i].brain, 0.1);
         }
     }
@@ -89,6 +89,7 @@ function generateCars(N, type) {
             3,
             color
         );
+        car.name = type == "AI"  ? "AI"+ 1 : "Me"
         car.load(carInfo);
         cars.push(car);
     }
@@ -104,13 +105,13 @@ function updateCarProgress(car) {
 
             if (s.equals(carSeg)) {
                 const proj = s.projectPoint(car);
-                proj.point.draw(carCtx)
+               
                 const firstPartOfSegment = new Segment(s.p1, proj.point);
-                firstPartOfSegment.draw(carCtx, { color: "red", width: 5 });
+               
                 car.progress += firstPartOfSegment.length();
                 break;
             } else {
-                s.draw(carCtx, { color: "red", width: 5 });
+               
                 car.progress += s.length();
             }
         }
@@ -122,8 +123,6 @@ function updateCarProgress(car) {
             car.progress = 1;
             car.finishTime = frameCount;
         }
-
-        console.log(car.progress);
     }
 
 }
@@ -153,7 +152,13 @@ function animate() {
     for (let i = 0; i < cars.length; i++) {
         const stat = document.getElementById("stat_" + i);
         stat.style.color = cars[i].color;
-        stat.innerText = (i + 1) + ": " + (cars[i].progress * 100).toFixed(1) + "%";
+        stat.innerText = (i + 1) + ": " + cars[i].name + (cars[i].damaged ? " 💥" : "");
+        stat.style.backgroundColor = cars[i].type == "AI" ? "black" : "white"; 
+        if (cars[i].finishTime) {
+            stat.innerHTML += "<span style='float:right;'>" +
+
+            (cars[i].finishTime / 60).toFixed(1) + "s </span>"
+        }
 
     }
 
