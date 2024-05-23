@@ -27,7 +27,7 @@ class Car {
         this.controls = new Controls(controlType);
 
         this.img = new Image();
-        this.img.src = "car.png"
+        this.img.src = "car.png";
 
         this.mask = document.createElement("canvas");
         this.mask.width = width;
@@ -43,7 +43,6 @@ class Car {
             maskCtx.drawImage(this.img, 0, 0, this.width, this.height);
         }
         this.update([], []);
-
     }
 
     load(info) {
@@ -55,8 +54,6 @@ class Car {
         this.sensor.raySpread = info.sensor.raySpread;
         this.sensor.rayLength = info.sensor.rayLength;
         this.sensor.rayOffset = info.sensor.rayOffset;
-
-
     }
 
     update(roadBorders, traffic) {
@@ -87,7 +84,6 @@ class Car {
             const percent = Math.abs(this.speed / this.maxSpeed);
             this.engine.setVolume(percent);
             this.engine.setPitch(percent);
-
         }
     }
 
@@ -157,7 +153,6 @@ class Car {
             if (this.controls.tilt) {
                 this.angle -= this.controls.tilt * 0.03;
             } else {
-
                 const flip = this.speed > 0 ? 1 : -1;
                 if (this.controls.left) {
                     this.angle += 0.03 * flip;
@@ -165,8 +160,6 @@ class Car {
                 if (this.controls.right) {
                     this.angle -= 0.03 * flip;
                 }
-
-
             }
         }
 
@@ -196,21 +189,17 @@ class Car {
             this.width,
             this.height);
         ctx.restore();
-
     }
 }
 
-document.addEventListener("click", () =>{
-    if (document.body.requestFullscreen){
+document.addEventListener("click", () => {
+    if (document.body.requestFullscreen) {
         document.body.requestFullscreen();
-    
-    } else if (document.body.mozRequestFullScreen){
+    } else if (document.body.mozRequestFullScreen) {
         document.body.mozRequestFullScreen();
-
-    } else if (document.body.webkitRequestFullscreen){
+    } else if (document.body.webkitRequestFullscreen) {
         document.body.webkitRequestFullscreen();
-
     } else if (document.body.msRequestFullscreen) {
         document.body.msRequestFullscreen();
     }
-})
+});
